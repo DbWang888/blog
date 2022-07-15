@@ -1,0 +1,1 @@
+{"buildTargets":[".PHONY","migration","migration_down","migration_init","migration_up","sqlc-generate","sqlc-init"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}

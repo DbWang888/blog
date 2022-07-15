@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS blog_article
+DROP TABLE IF EXISTS blog_auth
+DROP TABLE IF EXISTS blog_tag
