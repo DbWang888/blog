@@ -1,8 +1,8 @@
 -- name: CreateAuth :execresult
 INSERT INTO blog_auth (
-    username,`password`,created_on
+    username,`password`
 ) VALUES(
-    ?,?,?
+    ?,?
 );
 
 -- name: GetAuthByID :one

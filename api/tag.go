@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type tagRespoinse struct {
+type tagResponse struct {
 	ID         int32     `json:"id"`
 	Name       string    `json:"name"`
 	CreatedOn  time.Time `json:"created_on"`
@@ -22,8 +22,8 @@ type tagRespoinse struct {
 }
 
 //格式化返回数据
-func getTagResponse(blogtag db.BlogTag) tagRespoinse {
-	return tagRespoinse{
+func getTagResponse(blogtag db.BlogTag) tagResponse {
+	return tagResponse{
 		ID:         blogtag.ID,
 		Name:       blogtag.Name.String,
 		CreatedOn:  blogtag.CreatedOn,
@@ -54,7 +54,7 @@ func (server *Server) createBlogTag(c *gin.Context) {
 		CreatedBy: util.NewSqlNullString(req.CreatedBy),
 	}
 
-	createdResult, err := server.querier.CreateBlogTag(c, arg)
+	createdResult, err := server.store.CreateBlogTag(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -66,7 +66,7 @@ func (server *Server) createBlogTag(c *gin.Context) {
 		return
 	}
 
-	createdTag, err := server.querier.GetBlogTag(c, int32(createdID))
+	createdTag, err := server.store.GetBlogTag(c, int32(createdID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, e.GetErrResult(e.ERROR_NOT_EXIST_TAG, err))
 		return
@@ -94,7 +94,7 @@ func (server *Server) deleteBlogTag(c *gin.Context) {
 		DeletedOn: time.Now(),
 	}
 
-	_, err := server.querier.DeleteBlogTag(c, arg)
+	_, err := server.store.DeleteBlogTag(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -123,7 +123,7 @@ func (server *Server) updateBlogTag(c *gin.Context) {
 		ID:         req.ID,
 	}
 
-	_, err := server.querier.UpdateBlogTag(c, arg)
+	_, err := server.store.UpdateBlogTag(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -152,7 +152,7 @@ func (server *Server) listBlogTag(c *gin.Context) {
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
 
-	SqlTags, err := server.querier.ListBlogTag(c, arg)
+	SqlTags, err := server.store.ListBlogTag(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -160,7 +160,7 @@ func (server *Server) listBlogTag(c *gin.Context) {
 
 	sqlTagsLen := len(SqlTags)
 
-	tags := make([]tagRespoinse, sqlTagsLen)
+	tags := make([]tagResponse, sqlTagsLen)
 
 	for i, v := range SqlTags {
 		tags[i] = getTagResponse(v)
@@ -180,7 +180,7 @@ func (server *Server) getBlogTag(c *gin.Context) {
 		return
 	}
 
-	tag, err := server.querier.GetBlogTag(c, req.ID)
+	tag, err := server.store.GetBlogTag(c, req.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, e.GetErrResult(e.ERROR, err))
 		return

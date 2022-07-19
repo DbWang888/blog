@@ -31,6 +31,11 @@ type createAuthRequest struct {
 	Password string `json:"password" binding:"required,min=6"`
 }
 
+type registerResponse struct {
+	Auth authResponse `json:"auth"`
+	Tag  tagResponse  `json:"tag"`
+}
+
 func (server *Server) createAuth(c *gin.Context) {
 	var req createAuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -38,42 +43,24 @@ func (server *Server) createAuth(c *gin.Context) {
 		return
 	}
 
-	arg := db.CreateAuthParams{
-		Username:  util.NewSqlNullString(req.Username),
-		Password:  util.NewSqlNullString(req.Password),
-		CreatedOn: time.Now(),
+	arg := db.RegisterParams{
+		Auth: db.BlogAuth{
+			Username: util.NewSqlNullString(req.Username),
+			Password: util.NewSqlNullString(req.Password),
+		},
 	}
 
-	createdResult, err := server.querier.CreateAuth(c, arg)
+	registerResult, err := server.store.RegisterTX(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
 	}
 
-	createdAuthID, err := createdResult.LastInsertId()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
-		return
-	}
+	var result registerResponse
+	result.Auth = getAuthResponse(registerResult.Auth)
+	result.Tag = getTagResponse(registerResult.Tag)
 
-	auth, err := server.querier.GetAuthByID(c, int32(createdAuthID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
-		return
-	}
-
-	tagArg := db.CreateBlogTagParams{
-		Name:      util.NewSqlNullString("默认"),
-		CreatedBy: util.NewSqlNullString(auth.Username.String),
-	}
-
-	_, err = server.querier.CreateBlogTag(c, tagArg)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
-		return
-	}
-
-	c.JSON(http.StatusOK, e.GetSucessResult(getAuthResponse(auth)))
+	c.JSON(http.StatusOK, e.GetSucessResult(result))
 
 }
 
@@ -89,7 +76,7 @@ func (server *Server) loginAuth(c *gin.Context) {
 		return
 	}
 
-	auth, err := server.querier.GetAuthByUserName(c, util.NewSqlNullString(req.Username))
+	auth, err := server.store.GetAuthByUserName(c, util.NewSqlNullString(req.Username))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return

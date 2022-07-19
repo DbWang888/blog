@@ -8,25 +8,23 @@ package db
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const createAuth = `-- name: CreateAuth :execresult
 INSERT INTO blog_auth (
-    username,` + "`" + `password` + "`" + `,created_on
+    username,` + "`" + `password` + "`" + `
 ) VALUES(
-    ?,?,?
+    ?,?
 )
 `
 
 type CreateAuthParams struct {
-	Username  sql.NullString `json:"username"`
-	Password  sql.NullString `json:"password"`
-	CreatedOn time.Time      `json:"created_on"`
+	Username sql.NullString `json:"username"`
+	Password sql.NullString `json:"password"`
 }
 
 func (q *Queries) CreateAuth(ctx context.Context, arg CreateAuthParams) (sql.Result, error) {
-	return q.exec(ctx, q.createAuthStmt, createAuth, arg.Username, arg.Password, arg.CreatedOn)
+	return q.exec(ctx, q.createAuthStmt, createAuth, arg.Username, arg.Password)
 }
 
 const getAuthByID = `-- name: GetAuthByID :one

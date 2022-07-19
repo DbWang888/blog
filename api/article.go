@@ -66,7 +66,7 @@ func (server *Server) CreateBlogArticle(c *gin.Context) {
 		Content:   util.NewSqlNullString(req.Content),
 	}
 
-	createdResult, err := server.querier.CreateBlogArticle(c, arg)
+	createdResult, err := server.store.CreateBlogArticle(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR_NOT_EXIST_ARTICLE, err))
 		return
@@ -78,7 +78,7 @@ func (server *Server) CreateBlogArticle(c *gin.Context) {
 		return
 	}
 
-	article, err := server.querier.GetBlogArticles(c, int32(createdArticleID))
+	article, err := server.store.GetBlogArticles(c, int32(createdArticleID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -109,7 +109,7 @@ func (server *Server) UpdateBlogArticle(c *gin.Context) {
 		return
 	}
 
-	sqlarticle, err := server.querier.GetBlogArticles(c, req.ID)
+	sqlarticle, err := server.store.GetBlogArticles(c, req.ID)
 	if err != nil {
 		log.Fatal("update article -- getblogartice failed", err)
 		c.JSON(http.StatusBadGateway, e.GetErrResult(e.ERROR, err))
@@ -140,13 +140,13 @@ func (server *Server) UpdateBlogArticle(c *gin.Context) {
 		ID:         req.ID,
 	}
 
-	_, err = server.querier.UpdateBlogArticle(c, arg)
+	_, err = server.store.UpdateBlogArticle(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
 	}
 
-	sqlarticle, err = server.querier.GetBlogArticles(c, req.ID)
+	sqlarticle, err = server.store.GetBlogArticles(c, req.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -178,7 +178,7 @@ func (server *Server) listBlogAtricles(c *gin.Context) {
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
 
-	Sqlarticles, err := server.querier.ListBlogAtricles(c, arg)
+	Sqlarticles, err := server.store.ListBlogAtricles(c, arg)
 	log.Printf("%v", err)
 	if err != nil {
 		c.JSON(http.StatusNotFound, e.GetErrResult(e.ERROR, err))
@@ -211,7 +211,7 @@ func (server *Server) getBlogArticle(c *gin.Context) {
 		return
 	}
 
-	article, err := server.querier.GetBlogArticles(c, req.ID)
+	article, err := server.store.GetBlogArticles(c, req.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, e.GetErrResult(e.ERROR, err))
 		return
@@ -241,7 +241,7 @@ func (server *Server) deleteArticle(c *gin.Context) {
 		ID:        req.ID,
 	}
 
-	_, err := server.querier.DeleteArticle(c, arg)
+	_, err := server.store.DeleteArticle(c, arg)
 
 	if err != nil {
 		c.JSON(http.StatusForbidden, e.GetErrResult(e.ERROR, err))

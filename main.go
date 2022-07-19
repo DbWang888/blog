@@ -15,16 +15,14 @@ const (
 	dbSource = "root:4524@tcp(127.0.0.1:3306)/blog?charset=utf8&parseTime=True&loc=Local"
 )
 
-var querier *db.Queries
-
 func main() {
 	conn, err := sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatal("connot connect to db:", err)
 	}
 
-	querier = db.New(conn)
-	server, err := api.NewServer(querier)
+	store := db.NewStore(conn)
+	server, err := api.NewServer(store)
 	if err != nil {
 		log.Fatal("cannot create new server", err)
 	}
