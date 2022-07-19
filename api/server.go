@@ -35,6 +35,9 @@ func (server *Server) setupRouter() {
 	router.GET("/tags", server.listBlogTag)
 	router.GET("/tags/:id", server.getBlogTag)
 
+	router.POST("/auth", server.createAuth)
+	router.POST("/login", server.loginAuth)
+
 	server.router = router
 }
 

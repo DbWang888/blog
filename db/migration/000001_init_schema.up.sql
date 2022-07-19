@@ -25,7 +25,7 @@ CREATE TABLE `blog_article` (
 
 CREATE TABLE `blog_auth` (
   `id` INT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(50) DEFAULT "" COMMENT '账号',
+  `username` VARCHAR(50) UNIQUE DEFAULT "" COMMENT '账号',
   `password` VARCHAR(50) DEFAULT "" COMMENT '密码',
   `created_on` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 );
@@ -33,3 +33,8 @@ CREATE TABLE `blog_auth` (
 ALTER TABLE `blog_tag` COMMENT = '文章标签管理';
 
 ALTER TABLE `blog_article` COMMENT = '文章管理';
+
+
+
+ALTER TABLE blog_article ADD FOREIGN KEY (tag_id) REFERENCES blog_tag(id);
+ALTER TABLE blog_tag ADD UNIQUE KEY(`name`, created_by);

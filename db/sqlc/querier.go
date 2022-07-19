@@ -10,10 +10,13 @@ import (
 )
 
 type Querier interface {
+	CreateAuth(ctx context.Context, arg CreateAuthParams) (sql.Result, error)
 	CreateBlogArticle(ctx context.Context, arg CreateBlogArticleParams) (sql.Result, error)
 	CreateBlogTag(ctx context.Context, arg CreateBlogTagParams) (sql.Result, error)
 	DeleteArticle(ctx context.Context, arg DeleteArticleParams) (sql.Result, error)
 	DeleteBlogTag(ctx context.Context, arg DeleteBlogTagParams) (sql.Result, error)
+	GetAuthByID(ctx context.Context, id int32) (BlogAuth, error)
+	GetAuthByUserName(ctx context.Context, username sql.NullString) (BlogAuth, error)
 	GetBlogArticles(ctx context.Context, id int32) (BlogArticle, error)
 	GetBlogTag(ctx context.Context, id int32) (BlogTag, error)
 	ListBlogAtricles(ctx context.Context, arg ListBlogAtriclesParams) ([]BlogArticle, error)

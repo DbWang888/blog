@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.createAuthStmt, err = db.PrepareContext(ctx, createAuth); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateAuth: %w", err)
+	}
 	if q.createBlogArticleStmt, err = db.PrepareContext(ctx, createBlogArticle); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateBlogArticle: %w", err)
 	}
@@ -35,6 +38,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteBlogTagStmt, err = db.PrepareContext(ctx, deleteBlogTag); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteBlogTag: %w", err)
+	}
+	if q.getAuthByIDStmt, err = db.PrepareContext(ctx, getAuthByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAuthByID: %w", err)
+	}
+	if q.getAuthByUserNameStmt, err = db.PrepareContext(ctx, getAuthByUserName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAuthByUserName: %w", err)
 	}
 	if q.getBlogArticlesStmt, err = db.PrepareContext(ctx, getBlogArticles); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBlogArticles: %w", err)
@@ -59,6 +68,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.createAuthStmt != nil {
+		if cerr := q.createAuthStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createAuthStmt: %w", cerr)
+		}
+	}
 	if q.createBlogArticleStmt != nil {
 		if cerr := q.createBlogArticleStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createBlogArticleStmt: %w", cerr)
@@ -77,6 +91,16 @@ func (q *Queries) Close() error {
 	if q.deleteBlogTagStmt != nil {
 		if cerr := q.deleteBlogTagStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteBlogTagStmt: %w", cerr)
+		}
+	}
+	if q.getAuthByIDStmt != nil {
+		if cerr := q.getAuthByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAuthByIDStmt: %w", cerr)
+		}
+	}
+	if q.getAuthByUserNameStmt != nil {
+		if cerr := q.getAuthByUserNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAuthByUserNameStmt: %w", cerr)
 		}
 	}
 	if q.getBlogArticlesStmt != nil {
@@ -148,10 +172,13 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                    DBTX
 	tx                    *sql.Tx
+	createAuthStmt        *sql.Stmt
 	createBlogArticleStmt *sql.Stmt
 	createBlogTagStmt     *sql.Stmt
 	deleteArticleStmt     *sql.Stmt
 	deleteBlogTagStmt     *sql.Stmt
+	getAuthByIDStmt       *sql.Stmt
+	getAuthByUserNameStmt *sql.Stmt
 	getBlogArticlesStmt   *sql.Stmt
 	getBlogTagStmt        *sql.Stmt
 	listBlogAtriclesStmt  *sql.Stmt
@@ -164,10 +191,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                    tx,
 		tx:                    tx,
+		createAuthStmt:        q.createAuthStmt,
 		createBlogArticleStmt: q.createBlogArticleStmt,
 		createBlogTagStmt:     q.createBlogTagStmt,
 		deleteArticleStmt:     q.deleteArticleStmt,
 		deleteBlogTagStmt:     q.deleteBlogTagStmt,
+		getAuthByIDStmt:       q.getAuthByIDStmt,
+		getAuthByUserNameStmt: q.getAuthByUserNameStmt,
 		getBlogArticlesStmt:   q.getBlogArticlesStmt,
 		getBlogTagStmt:        q.getBlogTagStmt,
 		listBlogAtriclesStmt:  q.listBlogAtriclesStmt,
