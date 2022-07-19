@@ -80,18 +80,17 @@ const listBlogAtricles = `-- name: ListBlogAtricles :many
 SELECT id, tag_id, title, ` + "`" + `desc` + "`" + `, content, created_on, created_by, modified_on, modified_by, deleted_on, state FROM blog_article
 WHERE created_by = ?
 ORDER BY id
-LIMIT ?
-OFFSET ?
+LIMIT ?,?
 `
 
 type ListBlogAtriclesParams struct {
 	CreatedBy sql.NullString `json:"created_by"`
-	Limit     int32          `json:"limit"`
 	Offset    int32          `json:"offset"`
+	Limit     int32          `json:"limit"`
 }
 
 func (q *Queries) ListBlogAtricles(ctx context.Context, arg ListBlogAtriclesParams) ([]BlogArticle, error) {
-	rows, err := q.query(ctx, q.listBlogAtriclesStmt, listBlogAtricles, arg.CreatedBy, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listBlogAtriclesStmt, listBlogAtricles, arg.CreatedBy, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

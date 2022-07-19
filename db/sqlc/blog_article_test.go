@@ -43,7 +43,9 @@ func createRandomArticle(t *testing.T) int32 {
 }
 
 func TestCreateBlogArticle(t *testing.T) {
+
 	createRandomArticle(t)
+
 }
 
 func TestGetBlogArticles(t *testing.T) {
@@ -59,64 +61,86 @@ func TestGetBlogArticles(t *testing.T) {
 
 func TestListBlogAtricles(t *testing.T) {
 
+	// articleID := createRandomArticle(t)
+
+	// article,err := testQueries.GetBlogTag(context.Background(),articleID)
+
+	// require.NoError(t,err)
+	// require.NotEmpty(t,article)
+
+	arg := ListBlogAtriclesParams{
+		CreatedBy: util.NewSqlNullString("jack"),
+		Limit:     5,
+		Offset:    0,
+	}
+
+	articles, err := testQueries.ListBlogAtricles(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, articles)
+
+	for _, article := range articles {
+		require.NotEmpty(t, article)
+		require.Equal(t, "jack", article.CreatedBy.String)
+	}
+
 }
 
 func TestUpdateBlogArticle(t *testing.T) {
 
-	articleID1 :=  createRandomArticle(t)
-	article1,err := testQueries.GetBlogArticles(context.Background(),articleID1)
-	require.NoError(t,err)
-	require.NotEmpty(t,article1)
+	articleID1 := createRandomArticle(t)
+	article1, err := testQueries.GetBlogArticles(context.Background(), articleID1)
+	require.NoError(t, err)
+	require.NotEmpty(t, article1)
 
 	arg := UpdateBlogArticleParams{
-		ID: article1.ID,
-		Title: util.NewSqlNullString("new title"),
-		Desc: util.NewSqlNullString("new DESC"),
-		Content: util.NewSqlNullString("new content"),
+		ID:         article1.ID,
+		Title:      util.NewSqlNullString("new title"),
+		Desc:       util.NewSqlNullString("new DESC"),
+		Content:    util.NewSqlNullString("new content"),
 		ModifiedBy: util.NewSqlNullString("manager"),
 		ModifiedOn: time.Now(),
-		TagID: article1.TagID,
+		TagID:      article1.TagID,
 	}
 
-	updateResult,err := testQueries.UpdateBlogArticle(context.Background(),arg)
-	require.NoError(t,err)
-	require.NotEmpty(t,updateResult)
+	updateResult, err := testQueries.UpdateBlogArticle(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, updateResult)
 
 	// affectRows,err := updateResult.RowsAffected()
 	// require.NoError(t,err)
 	// require.Equal(t,affectRows,int64(4))
 
-	newArticle,err := testQueries.GetBlogArticles(context.Background(),article1.ID)
-	require.NoError(t,err)
-	require.NotEmpty(t,newArticle)
+	newArticle, err := testQueries.GetBlogArticles(context.Background(), article1.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, newArticle)
 
-	require.Equal(t,arg.Content,newArticle.Content)
-	require.Equal(t,arg.Desc,newArticle.Desc)
-	require.Equal(t,arg.Title,newArticle.Title)
-	require.Equal(t,arg.ModifiedBy,newArticle.ModifiedBy)
-	
+	require.Equal(t, arg.Content, newArticle.Content)
+	require.Equal(t, arg.Desc, newArticle.Desc)
+	require.Equal(t, arg.Title, newArticle.Title)
+	require.Equal(t, arg.ModifiedBy, newArticle.ModifiedBy)
+
 }
 
 func TestDeleteArticle(t *testing.T) {
 
-	articleID1 :=  createRandomArticle(t)
-	article1,err := testQueries.GetBlogArticles(context.Background(),articleID1)
-	require.NoError(t,err)
-	require.NotEmpty(t,article1)
-	require.Equal(t,util.NewSqlNullInt32(1),article1.State)
+	articleID1 := createRandomArticle(t)
+	article1, err := testQueries.GetBlogArticles(context.Background(), articleID1)
+	require.NoError(t, err)
+	require.NotEmpty(t, article1)
+	require.Equal(t, util.NewSqlNullInt32(1), article1.State)
 
 	arg := DeleteArticleParams{
-		ID: articleID1,
+		ID:        articleID1,
 		DeletedOn: time.Now(),
 	}
 
-	delResult,err := testQueries.DeleteArticle(context.Background(),arg)
-	require.NoError(t,err)
-	require.NotEmpty(t,delResult)
+	delResult, err := testQueries.DeleteArticle(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, delResult)
 
-	deleteArticle ,err:= testQueries.GetBlogArticles(context.Background(),articleID1)
-	require.NoError(t,err)
-	require.NotEmpty(t,deleteArticle)
-	require.Equal(t,util.NewSqlNullInt32(0),deleteArticle.State)
+	deleteArticle, err := testQueries.GetBlogArticles(context.Background(), articleID1)
+	require.NoError(t, err)
+	require.NotEmpty(t, deleteArticle)
+	require.Equal(t, util.NewSqlNullInt32(0), deleteArticle.State)
 
 }

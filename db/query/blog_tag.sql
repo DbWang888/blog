@@ -23,5 +23,4 @@ WHERE id=? LIMIT 1;
 SELECT * FROM blog_tag
 WHERE created_by = ?
 ORDER BY id
-LIMIT ?
-OFFSET ?;
+LIMIT ?,?;

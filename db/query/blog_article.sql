@@ -18,8 +18,7 @@ WHERE id = ? LIMIT 1;
 SELECT * FROM blog_article
 WHERE created_by = ?
 ORDER BY id
-LIMIT ?
-OFFSET ?;
+LIMIT ?,?;
 
 -- name: DeleteArticle :execresult
 UPDATE blog_article

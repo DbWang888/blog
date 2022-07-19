@@ -68,18 +68,17 @@ const listBlogTag = `-- name: ListBlogTag :many
 SELECT id, name, created_on, created_by, modified_on, modified_by, deleted_on, state FROM blog_tag
 WHERE created_by = ?
 ORDER BY id
-LIMIT ?
-OFFSET ?
+LIMIT ?,?
 `
 
 type ListBlogTagParams struct {
 	CreatedBy sql.NullString `json:"created_by"`
-	Limit     int32          `json:"limit"`
 	Offset    int32          `json:"offset"`
+	Limit     int32          `json:"limit"`
 }
 
 func (q *Queries) ListBlogTag(ctx context.Context, arg ListBlogTagParams) ([]BlogTag, error) {
-	rows, err := q.query(ctx, q.listBlogTagStmt, listBlogTag, arg.CreatedBy, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listBlogTagStmt, listBlogTag, arg.CreatedBy, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
