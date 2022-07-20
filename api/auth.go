@@ -4,7 +4,7 @@ import (
 	db "blog/db/sqlc"
 	"blog/e"
 	"blog/util"
-	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -21,6 +21,23 @@ func getAuthResponse(auth db.BlogAuth) authResponse {
 	return authResponse{
 		UserID:    auth.ID,
 		Username:  auth.Username.String,
+		CreatedOn: auth.CreatedOn,
+	}
+
+}
+
+type authResponseT struct {
+	UserID    int32     `json:"user_id"`
+	Username  string    `json:"username"`
+	Password  string    `json:"password"`
+	CreatedOn time.Time `json:"created_on"`
+}
+
+func getAuthResponseT(auth db.BlogAuth) authResponseT {
+	return authResponseT{
+		UserID:    auth.ID,
+		Username:  auth.Username.String,
+		Password:  auth.Password.String,
 		CreatedOn: auth.CreatedOn,
 	}
 
@@ -43,10 +60,16 @@ func (server *Server) createAuth(c *gin.Context) {
 		return
 	}
 
+	hashPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
+		return
+	}
+
 	arg := db.RegisterParams{
 		Auth: db.BlogAuth{
 			Username: util.NewSqlNullString(req.Username),
-			Password: util.NewSqlNullString(req.Password),
+			Password: util.NewSqlNullString(hashPassword),
 		},
 	}
 
@@ -69,6 +92,11 @@ type loginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type loginResponse struct {
+	Auth        authResponse `json:"auth"`
+	AccessToken string       `json:"access_token"`
+}
+
 func (server *Server) loginAuth(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -82,12 +110,25 @@ func (server *Server) loginAuth(c *gin.Context) {
 		return
 	}
 
-	if req.Password != auth.Password.String {
-		err = errors.New("密码错误")
-		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR_AUTH_CHECK_TOKEN_FAIL, err))
+	fmt.Print(auth.Password.String)
+
+	err = util.CheckHashPassword(req.Password, auth.Password.String)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR_AUTH, err))
 		return
 	}
 
-	c.JSON(http.StatusOK, e.GetSucessResult(getAuthResponse(auth)))
+	accessToken, err := server.tokenMaker.CreateToken(auth.Username.String, int(auth.ID), server.config.AccessTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
+		return
+	}
+
+	loginres := loginResponse{
+		Auth:        getAuthResponse(auth),
+		AccessToken: accessToken,
+	}
+
+	c.JSON(http.StatusOK, e.GetSucessResult(loginres))
 
 }

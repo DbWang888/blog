@@ -51,6 +51,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getBlogTagStmt, err = db.PrepareContext(ctx, getBlogTag); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBlogTag: %w", err)
 	}
+	if q.listAllArticlesStmt, err = db.PrepareContext(ctx, listAllArticles); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAllArticles: %w", err)
+	}
 	if q.listBlogAtriclesStmt, err = db.PrepareContext(ctx, listBlogAtricles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListBlogAtricles: %w", err)
 	}
@@ -111,6 +114,11 @@ func (q *Queries) Close() error {
 	if q.getBlogTagStmt != nil {
 		if cerr := q.getBlogTagStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBlogTagStmt: %w", cerr)
+		}
+	}
+	if q.listAllArticlesStmt != nil {
+		if cerr := q.listAllArticlesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAllArticlesStmt: %w", cerr)
 		}
 	}
 	if q.listBlogAtriclesStmt != nil {
@@ -181,6 +189,7 @@ type Queries struct {
 	getAuthByUserNameStmt *sql.Stmt
 	getBlogArticlesStmt   *sql.Stmt
 	getBlogTagStmt        *sql.Stmt
+	listAllArticlesStmt   *sql.Stmt
 	listBlogAtriclesStmt  *sql.Stmt
 	listBlogTagStmt       *sql.Stmt
 	updateBlogArticleStmt *sql.Stmt
@@ -200,6 +209,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getAuthByUserNameStmt: q.getAuthByUserNameStmt,
 		getBlogArticlesStmt:   q.getBlogArticlesStmt,
 		getBlogTagStmt:        q.getBlogTagStmt,
+		listAllArticlesStmt:   q.listAllArticlesStmt,
 		listBlogAtriclesStmt:  q.listBlogAtriclesStmt,
 		listBlogTagStmt:       q.listBlogTagStmt,
 		updateBlogArticleStmt: q.updateBlogArticleStmt,

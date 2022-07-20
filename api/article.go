@@ -3,7 +3,9 @@ package api
 import (
 	db "blog/db/sqlc"
 	"blog/e"
+	"blog/token"
 	"blog/util"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -43,11 +45,10 @@ func getArticleRes(article db.BlogArticle) articleResponse {
 
 //接收创建文章接口 前端post参数
 type createBlogArticleRequest struct {
-	TagID     int32  `json:"tag_id" binding:"required"`
-	Title     string `json:"title" binding:"required"`
-	Desc      string `json:"desc" binding:"required"`
-	Content   string `json:"content" binding:"required"`
-	CreatedBy string `json:"created_by" binding:"required"`
+	TagID   int32  `json:"tag_id" binding:"required"`
+	Title   string `json:"title" binding:"required"`
+	Desc    string `json:"desc" binding:"required"`
+	Content string `json:"content" binding:"required"`
 }
 
 //创建文章接口
@@ -58,10 +59,12 @@ func (server *Server) CreateBlogArticle(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateBlogArticleParams{
 		TagID:     util.NewSqlNullInt32(req.TagID),
 		Title:     util.NewSqlNullString(req.Title),
-		CreatedBy: util.NewSqlNullString(req.CreatedBy),
+		CreatedBy: util.NewSqlNullString(authPayload.UserName),
 		Desc:      util.NewSqlNullString(req.Desc),
 		Content:   util.NewSqlNullString(req.Content),
 	}
@@ -92,12 +95,10 @@ func (server *Server) CreateBlogArticle(c *gin.Context) {
 
 //修改文章前端参数
 type updateArticleRequest struct {
-	TagID      int32  `json:"tag_id" binding:"required"`
-	Title      string `json:"title"`
-	Desc       string `json:"desc"`
-	Content    string `json:"content"`
-	ModifiedBy string `json:"modified_by" binding:"required"`
-	ID         int32  `json:"id" binding:"required"`
+	TagID   int32  `json:"tag_id" binding:"required"`
+	Title   string `json:"title"`
+	Desc    string `json:"desc"`
+	Content string `json:"content"`
 }
 
 //修改文章实现
@@ -108,8 +109,9 @@ func (server *Server) UpdateBlogArticle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, e.GetErrResult(e.ERROR, err))
 		return
 	}
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	sqlarticle, err := server.store.GetBlogArticles(c, req.ID)
+	sqlarticle, err := server.store.GetBlogArticles(c, int32(authPayload.UserID))
 	if err != nil {
 		log.Fatal("update article -- getblogartice failed", err)
 		c.JSON(http.StatusBadGateway, e.GetErrResult(e.ERROR, err))
@@ -135,9 +137,9 @@ func (server *Server) UpdateBlogArticle(c *gin.Context) {
 		Title:      util.NewSqlNullString(req.Title),
 		Desc:       util.NewSqlNullString(req.Desc),
 		Content:    util.NewSqlNullString(req.Content),
-		ModifiedBy: util.NewSqlNullString(req.ModifiedBy),
+		ModifiedBy: util.NewSqlNullString(authPayload.UserName),
 		ModifiedOn: time.Now(),
-		ID:         req.ID,
+		ID:         int32(authPayload.UserID),
 	}
 
 	_, err = server.store.UpdateBlogArticle(c, arg)
@@ -146,7 +148,7 @@ func (server *Server) UpdateBlogArticle(c *gin.Context) {
 		return
 	}
 
-	sqlarticle, err = server.store.GetBlogArticles(c, req.ID)
+	sqlarticle, err = server.store.GetBlogArticles(c, int32(authPayload.UserID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, e.GetErrResult(e.ERROR, err))
 		return
@@ -158,11 +160,10 @@ func (server *Server) UpdateBlogArticle(c *gin.Context) {
 
 }
 
-//展示文章列表
+//展示用户本人的文章列表
 type listArticleRequest struct {
-	CreatedBy string `form:"created_by" binding:"required"`
-	PageID    int32  `form:"page_id" binding:"required,min=1"`
-	PageSize  int32  `form:"page_size" binding:"required,min=1,max=10"`
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=1,max=10"`
 }
 
 func (server *Server) listBlogAtricles(c *gin.Context) {
@@ -172,8 +173,10 @@ func (server *Server) listBlogAtricles(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.ListBlogAtriclesParams{
-		CreatedBy: util.NewSqlNullString(req.CreatedBy),
+		CreatedBy: util.NewSqlNullString(authPayload.UserName),
 		Limit:     req.PageSize,
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
@@ -198,6 +201,38 @@ func (server *Server) listBlogAtricles(c *gin.Context) {
 
 }
 
+//展示所有人的文章，作为首页
+func (server *Server) listAllBlogAtricles(c *gin.Context) {
+	var req listArticleRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, e.GetErrResult(e.ERROR, err))
+		return
+	}
+
+	arg := db.ListAllArticlesParams{
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}
+
+	Sqlarticles, err := server.store.ListAllArticles(c, arg)
+	log.Printf("%v", err)
+	if err != nil {
+		c.JSON(http.StatusNotFound, e.GetErrResult(e.ERROR, err))
+		return
+	}
+
+	len_Sqlarticles := len(Sqlarticles)
+
+	articles := make([]articleResponse, len_Sqlarticles)
+	for i := 0; i < len_Sqlarticles; i++ {
+		articles[i] = getArticleRes(Sqlarticles[i])
+
+	}
+
+	result := e.GetSucessResult(articles)
+	c.JSON(http.StatusOK, result)
+}
+
 //返回指定文章内容
 type getArticleRequest struct {
 	ID int32 `uri:"id" binding:"required,min=1"`
@@ -217,7 +252,15 @@ func (server *Server) getBlogArticle(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	res := getArticleRes(article)
+
+	if res.CreatedBy != authPayload.UserName {
+		err := errors.New("不是本人创建，无权查看")
+		c.JSON(http.StatusUnauthorized, e.GetErrResult(e.ERROR_AUTH_TOKEN, err))
+	}
+
 	result := e.GetSucessResult(res)
 
 	c.JSON(http.StatusOK, result)

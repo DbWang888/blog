@@ -19,6 +19,7 @@ type Querier interface {
 	GetAuthByUserName(ctx context.Context, username sql.NullString) (BlogAuth, error)
 	GetBlogArticles(ctx context.Context, id int32) (BlogArticle, error)
 	GetBlogTag(ctx context.Context, id int32) (BlogTag, error)
+	ListAllArticles(ctx context.Context, arg ListAllArticlesParams) ([]BlogArticle, error)
 	ListBlogAtricles(ctx context.Context, arg ListBlogAtriclesParams) ([]BlogArticle, error)
 	ListBlogTag(ctx context.Context, arg ListBlogTagParams) ([]BlogTag, error)
 	UpdateBlogArticle(ctx context.Context, arg UpdateBlogArticleParams) (sql.Result, error)

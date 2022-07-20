@@ -20,6 +20,11 @@ WHERE created_by = ?
 ORDER BY id
 LIMIT ?,?;
 
+-- name: ListAllArticles :many
+SELECT * FROM blog_article
+ORDER BY id
+LIMIT ?,?;
+
 -- name: DeleteArticle :execresult
 UPDATE blog_article
 SET state = 0,deleted_on=?

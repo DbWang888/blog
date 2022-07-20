@@ -76,6 +76,52 @@ func (q *Queries) GetBlogArticles(ctx context.Context, id int32) (BlogArticle, e
 	return i, err
 }
 
+const listAllArticles = `-- name: ListAllArticles :many
+SELECT id, tag_id, title, ` + "`" + `desc` + "`" + `, content, created_on, created_by, modified_on, modified_by, deleted_on, state FROM blog_article
+ORDER BY id
+LIMIT ?,?
+`
+
+type ListAllArticlesParams struct {
+	Offset int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
+}
+
+func (q *Queries) ListAllArticles(ctx context.Context, arg ListAllArticlesParams) ([]BlogArticle, error) {
+	rows, err := q.query(ctx, q.listAllArticlesStmt, listAllArticles, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BlogArticle{}
+	for rows.Next() {
+		var i BlogArticle
+		if err := rows.Scan(
+			&i.ID,
+			&i.TagID,
+			&i.Title,
+			&i.Desc,
+			&i.Content,
+			&i.CreatedOn,
+			&i.CreatedBy,
+			&i.ModifiedOn,
+			&i.ModifiedBy,
+			&i.DeletedOn,
+			&i.State,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listBlogAtricles = `-- name: ListBlogAtricles :many
 SELECT id, tag_id, title, ` + "`" + `desc` + "`" + `, content, created_on, created_by, modified_on, modified_by, deleted_on, state FROM blog_article
 WHERE created_by = ?

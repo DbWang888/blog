@@ -3,7 +3,9 @@ package api
 import (
 	db "blog/db/sqlc"
 	"blog/e"
+	"blog/token"
 	"blog/util"
+	"errors"
 	"net/http"
 	"time"
 
@@ -37,8 +39,7 @@ func getTagResponse(blogtag db.BlogTag) tagResponse {
 
 //接收创建tag参数
 type createTagRequest struct {
-	Name      string `json:"name" binding:"required"`
-	CreatedBy string `json:"created_by" binding:"required"`
+	Name string `json:"name" binding:"required"`
 }
 
 //实现创建tag接口
@@ -49,9 +50,11 @@ func (server *Server) createBlogTag(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateBlogTagParams{
 		Name:      util.NewSqlNullString(req.Name),
-		CreatedBy: util.NewSqlNullString(req.CreatedBy),
+		CreatedBy: util.NewSqlNullString(authPayload.UserName),
 	}
 
 	createdResult, err := server.store.CreateBlogTag(c, arg)
@@ -104,9 +107,8 @@ func (server *Server) deleteBlogTag(c *gin.Context) {
 }
 
 type updateTagRequest struct {
-	Name       string `json:"name" binding:"required"`
-	ModifiedBy string `json:"modified_by" binding:"required"`
-	ID         int32  `json:"id" binding:"required,min=1"`
+	Name string `json:"name" binding:"required"`
+	ID   int32  `json:"id" binding:"required,min=1"`
 }
 
 func (server *Server) updateBlogTag(c *gin.Context) {
@@ -116,9 +118,11 @@ func (server *Server) updateBlogTag(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.UpdateBlogTagParams{
 		Name:       util.NewSqlNullString(req.Name),
-		ModifiedBy: util.NewSqlNullString(req.ModifiedBy),
+		ModifiedBy: util.NewSqlNullString(authPayload.UserName),
 		ModifiedOn: time.Now(),
 		ID:         req.ID,
 	}
@@ -133,9 +137,8 @@ func (server *Server) updateBlogTag(c *gin.Context) {
 }
 
 type listTagRequest struct {
-	CreatedBy string `form:"created_by" binding:"required"`
-	PageID    int32  `form:"page_id" binding:"required,min=1"`
-	PageSize  int32  `form:"page_size" binding:"required,min=1,max=10"`
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=1,max=10"`
 }
 
 func (server *Server) listBlogTag(c *gin.Context) {
@@ -145,9 +148,10 @@ func (server *Server) listBlogTag(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, e.GetErrResult(e.INVALID_PARAMS, err))
 		return
 	}
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	arg := db.ListBlogTagParams{
-		CreatedBy: util.NewSqlNullString(req.CreatedBy),
+		CreatedBy: util.NewSqlNullString(authPayload.UserName),
 		Limit:     req.PageSize,
 		Offset:    (req.PageID - 1) * req.PageSize,
 	}
@@ -186,7 +190,15 @@ func (server *Server) getBlogTag(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	res := getTagResponse(tag)
+
+	if res.CreatedBy != authPayload.UserName {
+		err := errors.New("不是本人创建，无权查看")
+		c.JSON(http.StatusUnauthorized, e.GetErrResult(e.ERROR_AUTH_TOKEN, err))
+	}
+
 	result := e.GetSucessResult(res)
 
 	c.JSON(http.StatusOK, result)

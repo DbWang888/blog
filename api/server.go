@@ -2,18 +2,31 @@ package api
 
 import (
 	db "blog/db/sqlc"
+	"blog/token"
+	"blog/util"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	router *gin.Engine
-	store  db.Store
+	router     *gin.Engine
+	store      db.Store
+	config     util.Config
+	tokenMaker token.Maker
 }
 
-func NewServer(store db.Store) (*Server, error) {
+func NewServer(store db.Store, config util.Config) (*Server, error) {
+
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
 	server := &Server{
-		store: store,
+		store:      store,
+		config:     config,
+		tokenMaker: tokenMaker,
 	}
 
 	server.setupRouter()
@@ -22,21 +35,23 @@ func NewServer(store db.Store) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+	router.POST("/auth/register", server.createAuth)
+	router.POST("/auth/login", server.loginAuth)
 
-	router.POST("/articles", server.CreateBlogArticle)
-	router.POST("articles/update", server.UpdateBlogArticle)
-	router.GET("/articles", server.listBlogAtricles)
-	router.GET("/articles/:id", server.getBlogArticle)
-	router.POST("/articles/delete", server.deleteArticle)
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
-	router.POST("/tags", server.createBlogTag)
-	router.POST("/tags/delete", server.deleteBlogTag)
-	router.POST("tags/update", server.updateBlogTag)
-	router.GET("/tags", server.listBlogTag)
-	router.GET("/tags/:id", server.getBlogTag)
+	authRoutes.POST("/articles", server.CreateBlogArticle)
+	authRoutes.POST("articles/update", server.UpdateBlogArticle)
+	authRoutes.GET("/articles", server.listBlogAtricles)
+	authRoutes.GET("/all_articles", server.listAllBlogAtricles)
+	authRoutes.GET("/articles/:id", server.getBlogArticle)
+	authRoutes.POST("/articles/delete", server.deleteArticle)
 
-	router.POST("/register", server.createAuth)
-	router.POST("/login", server.loginAuth)
+	authRoutes.POST("/tags", server.createBlogTag)
+	authRoutes.POST("/tags/delete", server.deleteBlogTag)
+	authRoutes.POST("tags/update", server.updateBlogTag)
+	authRoutes.GET("/tags", server.listBlogTag)
+	authRoutes.GET("/tags/:id", server.getBlogTag)
 
 	server.router = router
 }
