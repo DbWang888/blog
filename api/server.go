@@ -6,6 +6,7 @@ import (
 	"blog/util"
 	"fmt"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,6 +36,7 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.POST("/auth/register", server.createAuth)
 	router.POST("/auth/login", server.loginAuth)
 

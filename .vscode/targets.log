@@ -8,7 +8,7 @@ make.exe: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jul 20 20:59:23 2022
+# Make data base, printed on Thu Jul 21 22:04:49 2022
 
 # Variables
 
@@ -49,17 +49,15 @@ PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
 # makefile (from 'Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
 # environment
-TMP = C:\Users\wangli\AppData\Local\Temp
+FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
-VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+TMP = C:\Users\wangli\AppData\Local\Temp
 # environment
 PROGRAMW6432 = C:\Program Files
 # environment
 PROGRAMDATA = C:\ProgramData
 # environment
 VSCODE_CWD = D:\Software\VScode\Microsoft VS Code
-# environment
-GOPROXY = https://goproxy.cn
 # default
 MAKE_HOST := x86_64-w64-mingw32
 # environment
@@ -91,7 +89,7 @@ INTELLIJ IDEA = D:\Software\IntelliJ IDEA 2020.2\bin;
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_25708_LTAQIWAFEQXGWRZA
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_29996_KEASYAXKASCNNPBY
 # environment
 COMPUTERNAME = LAPTOP-KAG98383
 # environment
@@ -109,7 +107,7 @@ USERNAME = wangli
 # environment
 PUBLIC = C:\Users\Public
 # environment
-GOMODCACHE = D:\Golangenvr\pkg\mod
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 VSCODE_CODE_CACHE_PATH = C:\Users\wangli\AppData\Roaming\Code\CachedData\3b889b090b5ad5793f524b5d1d39fda662b96a2a
 # environment
@@ -175,8 +173,6 @@ SYSTEMROOT = C:\Windows
 # environment
 APPDATA = C:\Users\wangli\AppData\Roaming
 # environment
-__COMPAT_LAYER = DetectorsAppHealth
-# environment
 TEMP = C:\Users\wangli\AppData\Local\Temp
 # environment
 COMSPEC = C:\Windows\system32\cmd.exe
@@ -211,11 +207,13 @@ LANG = C
 # environment
 PROCESSOR_LEVEL = 23
 # environment
-VSCODE_PID = 25708
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
+# environment
+VSCODE_PID = 29996
 # environment
 USERDOMAIN_ROAMINGPROFILE = LAPTOP-KAG98383
 # variable set hash-table stats:
-# Load=101/1024=10%, Rehash=0, Collisions=17/122=14%
+# Load=100/1024=10%, Rehash=0, Collisions=16/121=13%
 
 # Pattern-specific Variable Values
 
@@ -223,9 +221,9 @@ USERDOMAIN_ROAMINGPROFILE = LAPTOP-KAG98383
 
 # Directories
 
-# . (key d:/ProgramPro/workspace/go/blog, mtime 1658243749): 15 files, no impossibilities.
+# . (key d:/ProgramPro/workspace/go/blog, mtime 1658322428): 16 files, no impossibilities.
 
-# 15 files, no impossibilities in 1 directories.
+# 16 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -311,12 +309,12 @@ migration_up:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 25 / storage = 196 B / avg = 7 B
-# current buf: size = 8162 B / used = 196 B / count = 25 / avg = 7 B
+# strcache buffers: 1 (0) / strings = 26 / storage = 204 B / avg = 7 B
+# current buf: size = 8162 B / used = 204 B / count = 26 / avg = 7 B
 
-# strcache performance: lookups = 38 / hit rate = 34%
+# strcache performance: lookups = 39 / hit rate = 33%
 # hash-table stats:
-# Load=25/8192=0%, Rehash=0, Collisions=1/38=3%
-# Finished Make data base on Wed Jul 20 20:59:23 2022
+# Load=26/8192=0%, Rehash=0, Collisions=1/39=3%
+# Finished Make data base on Thu Jul 21 22:04:49 2022
 
  
