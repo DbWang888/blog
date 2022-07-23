@@ -8,7 +8,7 @@ make.exe: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Jul 21 22:04:49 2022
+# Make data base, printed on Sat Jul 23 14:29:42 2022
 
 # Variables
 
@@ -53,11 +53,15 @@ FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
 TMP = C:\Users\wangli\AppData\Local\Temp
 # environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
 PROGRAMW6432 = C:\Program Files
 # environment
 PROGRAMDATA = C:\ProgramData
 # environment
 VSCODE_CWD = D:\Software\VScode\Microsoft VS Code
+# environment
+GOPROXY = https://goproxy.cn
 # default
 MAKE_HOST := x86_64-w64-mingw32
 # environment
@@ -89,7 +93,7 @@ INTELLIJ IDEA = D:\Software\IntelliJ IDEA 2020.2\bin;
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_29996_KEASYAXKASCNNPBY
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24752_GTQFQEKZGRGCHTWD
 # environment
 COMPUTERNAME = LAPTOP-KAG98383
 # environment
@@ -107,7 +111,7 @@ USERNAME = wangli
 # environment
 PUBLIC = C:\Users\Public
 # environment
-VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+GOMODCACHE = D:\Golangenvr\pkg\mod
 # environment
 VSCODE_CODE_CACHE_PATH = C:\Users\wangli\AppData\Roaming\Code\CachedData\3b889b090b5ad5793f524b5d1d39fda662b96a2a
 # environment
@@ -209,11 +213,11 @@ PROCESSOR_LEVEL = 23
 # environment
 FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
-VSCODE_PID = 29996
+VSCODE_PID = 24752
 # environment
 USERDOMAIN_ROAMINGPROFILE = LAPTOP-KAG98383
 # variable set hash-table stats:
-# Load=100/1024=10%, Rehash=0, Collisions=16/121=13%
+# Load=102/1024=10%, Rehash=0, Collisions=17/123=14%
 
 # Pattern-specific Variable Values
 
@@ -315,6 +319,6 @@ migration_up:
 # strcache performance: lookups = 39 / hit rate = 33%
 # hash-table stats:
 # Load=26/8192=0%, Rehash=0, Collisions=1/39=3%
-# Finished Make data base on Thu Jul 21 22:04:49 2022
+# Finished Make data base on Sat Jul 23 14:29:42 2022
 
  
